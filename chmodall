@@ -1,0 +1,57 @@
+#! /bin/bash
+#
+
+NEWPERM="$1"
+
+if [[ $1 = "" ]]
+then
+    printf "SYNTAX: chmodall ###\n"
+    printf "\n"
+    printf "### = new permissions, e.g. 774\n"
+    printf "\n"
+    exit
+fi
+
+if [[ $2 != "-silent" ]]
+then
+    printf "Are you sure you want to change the permissions on all writeable\n"
+    printf "files in this directory and ALL SUB-DIRECTORIES? (y/n)\n"
+    read ANS
+
+    if [[ $ANS != "y" ]]
+    then
+        printf "Exiting...\n"
+        exit
+    fi
+fi
+
+find . -print | while read FILE
+do
+  if ([[ $FILE != "." ]] &&
+      [[ $FILE != ".." ]] &&
+      [[ -f $FILE ]])
+  then
+      if [[ $2 != "-silent" ]]
+      then
+          printf "$FILE\t"
+      fi
+      PERM1=`ls -ld $FILE | cut -f1 -d" "`
+      if [[ $2 != "-silent" ]]
+      then
+          printf "%s\t" "$PERM1"
+      fi
+      chmod $NEWPERM $FILE 2>/dev/null
+      PERM2=`ls -ld $FILE | cut -f1 -d" "`
+      if [[ $2 != "-silent" ]]
+      then
+          if [[ $PERM1 = $PERM2 ]]
+          then
+              printf "%s   XXXXXXXX NOT CHANGED XXXXXXXX\n" "$PERM2"
+          else
+              printf "%s\n" "$PERM2"
+          fi
+      fi
+  fi
+done
+
+
